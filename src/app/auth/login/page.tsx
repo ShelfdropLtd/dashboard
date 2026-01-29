@@ -12,12 +12,14 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setLoading(true)
+
+    // Create Supabase client only when needed (client-side)
+    const supabase = createClient()
 
     try {
       const { error: signInError } = await supabase.auth.signInWithPassword({

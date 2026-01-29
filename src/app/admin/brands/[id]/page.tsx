@@ -20,10 +20,12 @@ export default function EditBrandPage({ params }: EditBrandPageProps) {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const router = useRouter()
-  const supabase = createClient()
 
   useEffect(() => {
     async function fetchBrand() {
+      // Create Supabase client only when needed (client-side)
+      const supabase = createClient()
+
       const { data, error } = await supabase
         .from('brands')
         .select('*')
@@ -41,12 +43,15 @@ export default function EditBrandPage({ params }: EditBrandPageProps) {
     }
 
     fetchBrand()
-  }, [params.id, supabase, router])
+  }, [params.id, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
     setSaving(true)
+
+    // Create Supabase client only when needed (client-side)
+    const supabase = createClient()
 
     try {
       const { error: updateError } = await supabase
