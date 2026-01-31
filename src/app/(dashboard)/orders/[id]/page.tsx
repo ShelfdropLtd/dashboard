@@ -1,151 +1,172 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
-import Badge, { getOrderStatusVariant } from '@/components/ui/Badge'
-import OrderAcceptance from '@/components/orders/OrderAcceptance'
-import { ArrowLeft, Package, Truck, CheckCircle, Clock, XCircle } from 'lucide-react'
+import { ArrowLeft, FileText, Package } from 'lucide-react'
+import POActions from './POActions'
 
-interface OrderDetailPageProps {
+export default async function PODetailPage({
+  params
+}: {
   params: { id: string }
-}
-
-const statusSteps = [
-  { status: 'pending', label: 'Pending', icon: Clock },
-  { status: 'approved', label: 'Approved', icon: CheckCircle },
-  { status: 'dispatched', label: 'Dispatched', icon: Truck },
-  { status: 'delivered', label: 'Delivered', icon: Package },
-]
-
-function getStatusIndex(status: string): number {
-  if (status === 'cancelled') return -1
-  return statusSteps.findIndex(step => step.status === status)
-}
-
-export default async function OrderDetailPage({ params }: OrderDetailPageProps) {
+}) {
   const supabase = await createClient()
+
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
 
-  const { data: userData } = await supabase
-    .from('users')
-    .select('brand_id')
-    .eq('id', user.id)
-    .single() as { data: { brand_id: string | null } | null }
+  if (!user) {
+    redirect('/auth/login')
+  }
 
-  if (!userData?.brand_id) redirect('/dashboard')
+  // Get brand for this user
+  const { data: brand } = await supabase
+    .from('brands')
+    .select('id')
+    .eq('user_id', user.id)
+    .single()
 
-  const { data: order } = await supabase
-    .from('orders')
-    .select('*, order_lines(*)')
+  if (!brand) {
+    redirect('/onboarding')
+  }
+
+  // Get PO details
+  const { data: po } = await supabase
+    .from('purchase_orders')
+    .select('*')
     .eq('id', params.id)
-    .eq('brand_id', userData.brand_id)
-    .single() as { data: {
-      id: string; po_number: string; order_date: string; status: string; warehouse: string;
-      carrier: string | null; tracking_number: string | null; notes: string | null;
-      acceptance_status: string; rejection_reason: string | null; brand_comment: string | null; admin_reply: string | null;
-      order_lines: Array<{ id: string; sku: string; product_name: string; quantity_cases: number; case_price: number; line_total: number }>
-    } | null }
+    .eq('brand_id', brand.id)
+    .single()
 
-  if (!order) notFound()
+  if (!po) {
+    notFound()
+  }
 
-  const orderTotal = order.order_lines?.reduce((sum, line) => sum + (line.line_total ?? 0), 0) ?? 0
-  const totalCases = order.order_lines?.reduce((sum, line) => sum + line.quantity_cases, 0) ?? 0
-  const currentStatusIndex = getStatusIndex(order.status)
+  // Get PO items
+  const { data: items } = await supabase
+    .from('purchase_order_items')
+    .select('*')
+    .eq('purchase_order_id', params.id)
+
+  // Check if invoice exists for this PO
+  const { data: invoice } = await supabase
+    .from('invoices')
+    .select('id')
+    .eq('purchase_order_id', params.id)
+    .single()
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Link href="/orders" className="p-2 hover:bg-gray-100 rounded-lg transition-colors">
-          <ArrowLeft className="h-5 w-5 text-gray-600" />
-        </Link>
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Order {order.po_number}</h1>
-          <p className="text-gray-600">{new Date(order.order_date).toLocaleDateString('en-GB', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/orders"
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">{po.po_number}</h1>
+            <p className="text-gray-600">
+              Received {new Date(po.created_at).toLocaleDateString('en-GB', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric'
+              })}
+            </p>
+          </div>
         </div>
+        <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+          po.status === 'accepted' ? 'bg-green-100 text-green-800' :
+          po.status === 'rejected' ? 'bg-red-100 text-red-800' :
+          'bg-yellow-100 text-yellow-800'
+        }`}>
+          {po.status === 'pending' ? 'Awaiting Response' : po.status}
+        </span>
       </div>
 
-      <Card>
-        <CardHeader><CardTitle>Order Response</CardTitle></CardHeader>
-        <CardContent>
-          <OrderAcceptance orderId={order.id} currentStatus={order.acceptance_status || 'pending_review'} rejectionReason={order.rejection_reason} brandComment={order.brand_comment} adminReply={order.admin_reply} />
-        </CardContent>
-      </Card>
+      {/* PO Items */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="p-6 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Order Items</h2>
+        </div>
 
-      {order.status !== 'cancelled' ? (
-        <Card>
-          <CardContent className="py-6">
-            <div className="flex justify-between">
-              {statusSteps.map((step, index) => {
-                const Icon = step.icon
-                const isCompleted = index <= currentStatusIndex
-                const isCurrent = index === currentStatusIndex
-                return (
-                  <div key={step.status} className="flex flex-col items-center flex-1">
-                    <div className="flex items-center w-full">
-                      {index > 0 && <div className={`flex-1 h-1 ${index <= currentStatusIndex ? 'bg-brand-accent' : 'bg-gray-200'}`} />}
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${isCompleted ? 'bg-brand-accent text-white' : 'bg-gray-200 text-gray-500'} ${isCurrent ? 'ring-4 ring-indigo-100' : ''}`}>
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      {index < statusSteps.length - 1 && <div className={`flex-1 h-1 ${index < currentStatusIndex ? 'bg-brand-accent' : 'bg-gray-200'}`} />}
+        <table className="w-full">
+          <thead className="bg-gray-50 border-b border-gray-200">
+            <tr>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">SKU</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Qty</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Unit Cost</th>
+              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {items?.map((item) => (
+              <tr key={item.id}>
+                <td className="px-6 py-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                      <Package className="w-5 h-5 text-gray-400" />
                     </div>
-                    <span className={`mt-2 text-sm font-medium ${isCompleted ? 'text-gray-900' : 'text-gray-500'}`}>{step.label}</span>
+                    <span className="font-medium text-gray-900">{item.product_name}</span>
                   </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <Card><CardContent className="py-6"><div className="flex items-center justify-center gap-2 text-red-600"><XCircle className="h-6 w-6" /><span className="font-medium">This order has been cancelled</span></div></CardContent></Card>
+                </td>
+                <td className="px-6 py-4 text-sm text-gray-600">{item.sku_code}</td>
+                <td className="px-6 py-4 text-sm text-gray-900 text-right">{item.quantity}</td>
+                <td className="px-6 py-4 text-sm text-gray-900 text-right">£{item.unit_cost?.toFixed(2)}</td>
+                <td className="px-6 py-4 text-sm font-medium text-gray-900 text-right">£{item.total_cost?.toFixed(2)}</td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot className="bg-gray-50 border-t border-gray-200">
+            <tr>
+              <td colSpan={4} className="px-6 py-4 text-right font-semibold text-gray-900">Total</td>
+              <td className="px-6 py-4 text-right font-bold text-gray-900">£{po.total_amount?.toFixed(2)}</td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {po.notes && (
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h3 className="font-medium text-gray-900 mb-2">Notes</h3>
+          <p className="text-gray-600">{po.notes}</p>
+        </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader><CardTitle>Order Details</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between"><span className="text-gray-500">PO Number</span><span className="font-medium">{order.po_number}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Order Date</span><span className="font-medium">{new Date(order.order_date).toLocaleDateString('en-GB')}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Status</span><Badge variant={getOrderStatusVariant(order.status)}>{order.status.charAt(0).toUpperCase() + order.status.slice(1)}</Badge></div>
-            <div className="flex justify-between"><span className="text-gray-500">Warehouse</span><span className="font-medium">{order.warehouse}</span></div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader><CardTitle>Shipping Details</CardTitle></CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex justify-between"><span className="text-gray-500">Carrier</span><span className="font-medium">{order.carrier || '-'}</span></div>
-            <div className="flex justify-between"><span className="text-gray-500">Tracking Number</span><span className="font-medium">{order.tracking_number || '-'}</span></div>
-            {order.notes && <div><span className="text-gray-500 block mb-1">Notes</span><p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">{order.notes}</p></div>}
-          </CardContent>
-        </Card>
-      </div>
+      {/* Actions */}
+      {po.status === 'pending' && (
+        <POActions poId={po.id} />
+      )}
 
-      <Card>
-        <CardHeader><CardTitle>Line Items</CardTitle></CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader><TableRow><TableHead>SKU</TableHead><TableHead>Product Name</TableHead><TableHead className="text-right">Cases</TableHead><TableHead className="text-right">Case Price</TableHead><TableHead className="text-right">Line Total</TableHead></TableRow></TableHeader>
-            <TableBody>
-              {order.order_lines?.map((line) => (
-                <TableRow key={line.id}>
-                  <TableCell className="font-mono text-sm">{line.sku}</TableCell>
-                  <TableCell>{line.product_name}</TableCell>
-                  <TableCell className="text-right">{line.quantity_cases}</TableCell>
-                  <TableCell className="text-right">£{line.case_price.toFixed(2)}</TableCell>
-                  <TableCell className="text-right font-medium">£{(line.line_total ?? 0).toFixed(2)}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <div className="border-t border-gray-200 p-6">
-            <div className="flex justify-end gap-8">
-              <div className="text-right"><p className="text-sm text-gray-500">Total Cases</p><p className="text-lg font-semibold">{totalCases}</p></div>
-              <div className="text-right"><p className="text-sm text-gray-500">Order Total</p><p className="text-2xl font-bold text-gray-900">£{orderTotal.toLocaleString('en-GB', { minimumFractionDigits: 2 })}</p></div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {po.status === 'accepted' && !invoice && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-6">
+          <h3 className="font-medium text-green-900 mb-2">PO Accepted</h3>
+          <p className="text-green-700 mb-4">You can now create an invoice for this purchase order.</p>
+          <Link
+            href={`/invoices/create?po=${po.id}`}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+          >
+            <FileText className="w-4 h-4" />
+            Create Invoice
+          </Link>
+        </div>
+      )}
+
+      {invoice && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
+          <h3 className="font-medium text-blue-900 mb-2">Invoice Created</h3>
+          <p className="text-blue-700 mb-4">An invoice has been created for this PO.</p>
+          <Link
+            href={`/invoices/${invoice.id}`}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            <FileText className="w-4 h-4" />
+            View Invoice
+          </Link>
+        </div>
+      )}
     </div>
   )
 }
