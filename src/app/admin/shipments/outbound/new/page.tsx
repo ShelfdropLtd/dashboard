@@ -4,9 +4,9 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
-import CreateInboundForm from './CreateInboundForm'
+import CreateOutboundForm from './CreateOutboundForm'
 
-export default async function CreateInboundShipmentPage() {
+export default async function CreateOutboundShipmentPage() {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -22,6 +22,13 @@ export default async function CreateInboundShipmentPage() {
     .eq('status', 'approved')
     .order('company_name')
 
+  // Get pending/accepted purchase orders for linking
+  const { data: orders } = await supabase
+    .from('purchase_orders')
+    .select('id, reference_number, brand_id, brands(company_name)')
+    .in('status', ['accepted', 'pending'])
+    .order('created_at', { ascending: false })
+
   return (
     <div className="p-8 max-w-4xl">
       <div className="mb-8">
@@ -32,11 +39,11 @@ export default async function CreateInboundShipmentPage() {
           <ArrowLeft className="w-4 h-4" />
           Back to Shipments
         </Link>
-        <h1 className="text-2xl font-bold text-shelfdrop-blue">Send to Shelfdrop</h1>
-        <p className="text-gray-600">Record a new shipment arriving at the Shelfdrop warehouse</p>
+        <h1 className="text-2xl font-bold text-shelfdrop-blue">Create Outbound Shipment</h1>
+        <p className="text-gray-600">Ship products to customers on behalf of a brand</p>
       </div>
 
-      <CreateInboundForm brands={brands || []} />
+      <CreateOutboundForm brands={brands || []} orders={orders || []} />
     </div>
   )
 }

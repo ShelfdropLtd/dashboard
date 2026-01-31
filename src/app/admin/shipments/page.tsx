@@ -66,7 +66,7 @@ export default async function AdminShipmentsPage() {
             className="inline-flex items-center gap-2 px-4 py-2 bg-shelfdrop-green text-black font-medium rounded-lg hover:bg-green-400 transition-colors"
           >
             <ArrowDownToLine className="w-4 h-4" />
-            Log Inbound
+            Send to Shelfdrop
           </Link>
           <Link
             href="/admin/shipments/outbound/new"

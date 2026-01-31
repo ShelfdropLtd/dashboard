@@ -17,7 +17,8 @@ import {
   MessageSquare,
   Truck,
   BarChart3,
-  Receipt
+  Receipt,
+  Users
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -38,6 +39,7 @@ const brandNavItems = [
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/brands', label: 'Brands', icon: Building2 },
+  { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/approvals', label: 'Brand Approvals', icon: ClipboardCheck },
   { href: '/admin/product-approvals', label: 'Product Approvals', icon: CheckSquare },
   { href: '/admin/products', label: 'All Products', icon: Package },
@@ -45,6 +47,7 @@ const adminNavItems = [
   { href: '/admin/duties', label: 'Duties & Bond', icon: Receipt },
   { href: '/admin/invoices', label: 'Invoices', icon: FileText },
   { href: '/admin/promotions', label: 'Promotions', icon: Megaphone },
+  { href: '/admin/reports', label: 'All Reports', icon: BarChart3 },
   { href: '/admin/support', label: 'Support', icon: MessageSquare },
   { href: '/admin/logs', label: 'Audit Logs', icon: History },
   { href: '/admin/data', label: 'Data Management', icon: Database },
