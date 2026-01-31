@@ -8,11 +8,10 @@ import {
   FileText,
   LogOut,
   Building2,
+  Users,
   ClipboardCheck,
   Database,
-  History,
-  Package,
-  CheckSquare
+  Truck
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -20,18 +19,16 @@ import { useEffect, useState } from 'react'
 
 const brandNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/products', label: 'Products', icon: Package },
-  { href: '/orders', label: 'Purchase Orders', icon: ShoppingCart },
+  { href: '/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/invoices', label: 'Invoices', icon: FileText },
 ]
 
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/brands', label: 'Brands', icon: Building2 },
-  { href: '/admin/approvals', label: 'Brand Approvals', icon: ClipboardCheck },
-  { href: '/admin/product-approvals', label: 'Product Approvals', icon: CheckSquare },
-  { href: '/admin/products', label: 'All Products', icon: Package },
-  { href: '/admin/logs', label: 'Audit Logs', icon: History },
+  { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
+  { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/invoices', label: 'Invoices', icon: FileText },
   { href: '/admin/data', label: 'Data Management', icon: Database },
 ]
 
@@ -46,6 +43,7 @@ export default function Sidebar() {
     async function checkRole() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
+        // Simple admin check by email
         setIsAdmin(user.email === 'george@shelfdrop.com')
       }
       setLoading(false)
