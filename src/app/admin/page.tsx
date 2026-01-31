@@ -94,7 +94,7 @@ export default async function AdminDashboard() {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="p-4 border-b border-gray-200 flex items-center justify-between">
             <h2 className="font-semibold text-gray-900">Recent Brands</h2>
-            <Link href="/admin/brands" className="text-sm text-[#F15A2B] hover:underline">
+            <Link href="/admin/brands" className="text-sm text-shelfdrop-blue hover:underline">
               View all
             </Link>
           </div>

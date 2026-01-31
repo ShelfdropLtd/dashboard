@@ -189,7 +189,7 @@ export default function ProductsTable({ products, brands }: ProductsTableProps) 
                   <div className="flex items-center justify-end gap-2">
                     <button
                       onClick={() => openEditModal(product)}
-                      className="p-1 text-gray-400 hover:text-[#F15A2B] transition-colors"
+                      className="p-1 text-gray-400 hover:text-shelfdrop-blue transition-colors"
                       title="Edit product"
                     >
                       <Pencil className="w-4 h-4" />
@@ -234,7 +234,7 @@ export default function ProductsTable({ products, brands }: ProductsTableProps) 
                 <select
                   value={editForm.brand_id}
                   onChange={(e) => setEditForm({ ...editForm, brand_id: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
                 >
                   {brands.map((brand) => (
                     <option key={brand.id} value={brand.id}>
@@ -251,7 +251,7 @@ export default function ProductsTable({ products, brands }: ProductsTableProps) 
                     type="text"
                     value={editForm.sku_code}
                     onChange={(e) => setEditForm({ ...editForm, sku_code: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -260,7 +260,7 @@ export default function ProductsTable({ products, brands }: ProductsTableProps) 
                     type="text"
                     value={editForm.size}
                     onChange={(e) => setEditForm({ ...editForm, size: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
                   />
                 </div>
               </div>
@@ -271,7 +271,7 @@ export default function ProductsTable({ products, brands }: ProductsTableProps) 
                   type="text"
                   value={editForm.product_name}
                   onChange={(e) => setEditForm({ ...editForm, product_name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
                 />
               </div>
 
@@ -283,7 +283,7 @@ export default function ProductsTable({ products, brands }: ProductsTableProps) 
                     step="0.01"
                     value={editForm.unit_cost}
                     onChange={(e) => setEditForm({ ...editForm, unit_cost: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -293,7 +293,7 @@ export default function ProductsTable({ products, brands }: ProductsTableProps) 
                     step="0.01"
                     value={editForm.unit_price}
                     onChange={(e) => setEditForm({ ...editForm, unit_price: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
                   />
                 </div>
                 <div>
@@ -301,7 +301,7 @@ export default function ProductsTable({ products, brands }: ProductsTableProps) 
                   <select
                     value={editForm.status}
                     onChange={(e) => setEditForm({ ...editForm, status: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
                   >
                     <option value="pending">Pending</option>
                     <option value="approved">Approved</option>
@@ -321,7 +321,7 @@ export default function ProductsTable({ products, brands }: ProductsTableProps) 
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-4 py-2 bg-[#F15A2B] text-white rounded-lg hover:bg-[#D14A1F] disabled:opacity-50 flex items-center gap-2"
+                className="px-4 py-2 bg-shelfdrop-green text-black rounded-lg hover:bg-green-400 disabled:opacity-50 flex items-center gap-2"
               >
                 {saving ? (
                   <>

@@ -116,7 +116,7 @@ export default async function AdminBrandsPage() {
                   <td className="px-6 py-4 text-right">
                     <Link
                       href={`/admin/brands/${brand.id}`}
-                      className="inline-flex items-center gap-1 text-[#F15A2B] hover:underline text-sm"
+                      className="inline-flex items-center gap-1 text-shelfdrop-blue hover:underline text-sm"
                     >
                       Manage
                       <ChevronRight className="w-4 h-4" />

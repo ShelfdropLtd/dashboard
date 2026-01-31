@@ -66,7 +66,7 @@ export default async function BrandDetailPage({
         </div>
         <Link
           href={`/admin/brands/${params.id}/create-po`}
-          className="flex items-center gap-2 px-4 py-2 bg-[#F15A2B] text-white rounded-lg hover:bg-[#D14A1F] transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-shelfdrop-green text-black rounded-lg hover:bg-green-400 transition-colors"
         >
           <FileText className="w-4 h-4" />
           Create PO
@@ -77,7 +77,7 @@ export default async function BrandDetailPage({
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="p-6 border-b border-gray-200 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Package className="w-5 h-5 text-[#F15A2B]" />
+            <Package className="w-5 h-5 text-shelfdrop-blue" />
             <h2 className="text-lg font-semibold text-gray-900">Products ({products?.length || 0})</h2>
           </div>
         </div>
@@ -93,7 +93,7 @@ export default async function BrandDetailPage({
       {/* Purchase Orders Section */}
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         <div className="p-6 border-b border-gray-200 flex items-center gap-3">
-          <FileText className="w-5 h-5 text-[#F15A2B]" />
+          <FileText className="w-5 h-5 text-shelfdrop-blue" />
           <h2 className="text-lg font-semibold text-gray-900">Purchase Orders ({purchaseOrders?.length || 0})</h2>
         </div>
 

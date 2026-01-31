@@ -2,8 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Shelfdrop Portal',
-  description: 'Brand portal for Shelfdrop distribution partners',
+  title: 'Shelfdrop Brand Portal',
+  description: 'Manage your brand partnership with Shelfdrop',
 }
 
 export default function RootLayout({

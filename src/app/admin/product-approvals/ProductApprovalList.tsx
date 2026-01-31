@@ -142,7 +142,7 @@ export default function ProductApprovalList({ products }: ProductApprovalListPro
                     min="0"
                     value={prices[product.id] ?? product.wholesale_price ?? product.unit_cost}
                     onChange={(e) => setPrices({ ...prices, [product.id]: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
                   />
                 </div>
               </div>
@@ -189,7 +189,7 @@ export default function ProductApprovalList({ products }: ProductApprovalListPro
                 onChange={(e) => setRejectionReasons({ ...rejectionReasons, [showRejectModal]: e.target.value })}
                 placeholder="e.g. Price too high, need more product details..."
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
               />
             </div>
             <div className="flex justify-end gap-3">

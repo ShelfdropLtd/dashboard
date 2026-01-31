@@ -60,7 +60,7 @@ export default function AddProductForm({ brandId }: AddProductFormProps) {
         onChange={(e) => setSkuCode(e.target.value)}
         placeholder="SKU Code"
         required
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
       />
       <input
         type="text"
@@ -68,14 +68,14 @@ export default function AddProductForm({ brandId }: AddProductFormProps) {
         onChange={(e) => setProductName(e.target.value)}
         placeholder="Product Name"
         required
-        className="col-span-2 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+        className="col-span-2 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
       />
       <input
         type="text"
         value={size}
         onChange={(e) => setSize(e.target.value)}
         placeholder="Size (e.g. 70cl)"
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
       />
       <input
         type="number"
@@ -84,12 +84,12 @@ export default function AddProductForm({ brandId }: AddProductFormProps) {
         onChange={(e) => setUnitCost(e.target.value)}
         placeholder="Cost (£)"
         required
-        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+        className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
       />
       <button
         type="submit"
         disabled={loading}
-        className="px-4 py-2 bg-[#F15A2B] text-white rounded-lg hover:bg-[#D14A1F] transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+        className="px-4 py-2 bg-shelfdrop-green text-black rounded-lg hover:bg-green-400 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
       >
         {loading ? (
           <Loader2 className="w-4 h-4 animate-spin" />

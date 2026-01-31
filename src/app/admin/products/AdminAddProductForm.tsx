@@ -78,7 +78,7 @@ export default function AdminAddProductForm({ brands }: AdminAddProductFormProps
             value={brandId}
             onChange={(e) => setBrandId(e.target.value)}
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
           >
             <option value="">Select a brand...</option>
             {brands.map((brand) => (
@@ -96,7 +96,7 @@ export default function AdminAddProductForm({ brands }: AdminAddProductFormProps
             onChange={(e) => setSkuCode(e.target.value)}
             placeholder="e.g. GIN-001"
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
           />
         </div>
         <div className="md:col-span-2">
@@ -107,7 +107,7 @@ export default function AdminAddProductForm({ brands }: AdminAddProductFormProps
             onChange={(e) => setProductName(e.target.value)}
             placeholder="e.g. Premium London Dry Gin"
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
           />
         </div>
         <div>
@@ -117,7 +117,7 @@ export default function AdminAddProductForm({ brands }: AdminAddProductFormProps
             value={size}
             onChange={(e) => setSize(e.target.value)}
             placeholder="e.g. 70cl"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
           />
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function AdminAddProductForm({ brands }: AdminAddProductFormProps
             onChange={(e) => setUnitCost(e.target.value)}
             placeholder="0.00"
             required
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
           />
         </div>
         <div className="w-36">
@@ -144,13 +144,13 @@ export default function AdminAddProductForm({ brands }: AdminAddProductFormProps
             value={unitPrice}
             onChange={(e) => setUnitPrice(e.target.value)}
             placeholder="0.00"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
           />
         </div>
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-2 bg-[#F15A2B] text-white rounded-lg hover:bg-[#D14A1F] transition-colors disabled:opacity-50 flex items-center gap-2"
+          className="px-6 py-2 bg-shelfdrop-green text-black rounded-lg hover:bg-green-400 transition-colors disabled:opacity-50 flex items-center gap-2"
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />

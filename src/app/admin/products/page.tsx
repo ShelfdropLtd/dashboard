@@ -51,7 +51,7 @@ export default async function AdminProductsPage({
       {/* Add Product Form */}
       <div className="bg-white rounded-xl border border-gray-200 p-6">
         <div className="flex items-center gap-2 mb-4">
-          <Plus className="w-5 h-5 text-[#F15A2B]" />
+          <Plus className="w-5 h-5 text-shelfdrop-blue" />
           <h2 className="font-semibold text-gray-900">Add Product</h2>
         </div>
         <AdminAddProductForm brands={brands || []} />

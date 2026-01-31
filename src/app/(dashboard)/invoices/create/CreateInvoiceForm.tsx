@@ -99,11 +99,11 @@ export default function CreateInvoiceForm({ brandId, brandName, po, poItems }: C
             onClick={() => setMode('auto')}
             className={`p-4 rounded-lg border-2 transition-colors ${
               mode === 'auto'
-                ? 'border-[#F15A2B] bg-[#F15A2B]/5'
+                ? 'border-shelfdrop-green bg-shelfdrop-green/5'
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
-            <FileText className={`w-6 h-6 mx-auto mb-2 ${mode === 'auto' ? 'text-[#F15A2B]' : 'text-gray-400'}`} />
+            <FileText className={`w-6 h-6 mx-auto mb-2 ${mode === 'auto' ? 'text-shelfdrop-blue' : 'text-gray-400'}`} />
             <p className="font-medium text-gray-900">Auto-fill from PO</p>
             <p className="text-sm text-gray-500 mt-1">Items and prices locked</p>
           </button>
@@ -112,11 +112,11 @@ export default function CreateInvoiceForm({ brandId, brandName, po, poItems }: C
             onClick={() => setMode('upload')}
             className={`p-4 rounded-lg border-2 transition-colors ${
               mode === 'upload'
-                ? 'border-[#F15A2B] bg-[#F15A2B]/5'
+                ? 'border-shelfdrop-green bg-shelfdrop-green/5'
                 : 'border-gray-200 hover:border-gray-300'
             }`}
           >
-            <Upload className={`w-6 h-6 mx-auto mb-2 ${mode === 'upload' ? 'text-[#F15A2B]' : 'text-gray-400'}`} />
+            <Upload className={`w-6 h-6 mx-auto mb-2 ${mode === 'upload' ? 'text-shelfdrop-blue' : 'text-gray-400'}`} />
             <p className="font-medium text-gray-900">Upload PDF</p>
             <p className="text-sm text-gray-500 mt-1">Attach your own invoice</p>
           </button>
@@ -135,7 +135,7 @@ export default function CreateInvoiceForm({ brandId, brandName, po, poItems }: C
               onChange={(e) => setInvoiceNumber(e.target.value)}
               placeholder="e.g. INV-001"
               required
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
             />
           </div>
           <div>
@@ -157,7 +157,7 @@ export default function CreateInvoiceForm({ brandId, brandName, po, poItems }: C
               value={pdfUrl}
               onChange={(e) => setPdfUrl(e.target.value)}
               placeholder="https://..."
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
             />
             <p className="text-xs text-gray-500 mt-1">Enter a link to your invoice PDF</p>
           </div>
@@ -170,7 +170,7 @@ export default function CreateInvoiceForm({ brandId, brandName, po, poItems }: C
             onChange={(e) => setNotes(e.target.value)}
             rows={2}
             placeholder="Any additional notes..."
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
           />
         </div>
       </div>
@@ -234,7 +234,7 @@ export default function CreateInvoiceForm({ brandId, brandName, po, poItems }: C
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-3 bg-[#F15A2B] text-white rounded-lg hover:bg-[#D14A1F] disabled:opacity-50 flex items-center gap-2"
+          className="px-6 py-3 bg-shelfdrop-green text-black rounded-lg hover:bg-green-400 disabled:opacity-50 flex items-center gap-2"
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />

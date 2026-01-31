@@ -1,191 +1,183 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { Package, ShoppingCart, FileText, Clock, CheckCircle } from 'lucide-react'
 import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
-import Badge, { getOrderStatusVariant } from '@/components/ui/Badge'
-import { Package, PoundSterling, FileText, ArrowRight } from 'lucide-react'
 
-export default async function DashboardPage() {
+export default async function BrandDashboard() {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/auth/login')
 
-  // Get user's brand_id
-  const { data: userData } = await supabase
-    .from('users')
-    .select('brand_id, brands(name)')
-    .eq('id', user.id)
-    .single() as { data: { brand_id: string | null; brands: { name: string } | null } | null }
-
-  if (!userData?.brand_id) {
-    return (
-      <div className="text-center py-12">
-        <h1 className="text-2xl font-bold text-gray-900 mb-4">Welcome to Shelfdrop</h1>
-        <p className="text-gray-600">
-          Your account has been created. A Shelfdrop admin will assign you to your brand shortly.
-        </p>
-      </div>
-    )
+  if (!user) {
+    redirect('/auth/login')
   }
 
-  const brandId = userData.brand_id
+  // Get brand for this user
+  const { data: brand } = await supabase
+    .from('brands')
+    .select('id, company_name, name, status')
+    .eq('user_id', user.id)
+    .single()
 
-  // Get current month dates
-  const now = new Date()
-  const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString()
-  const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).toISOString()
+  if (!brand) {
+    redirect('/onboarding')
+  }
 
-  // Fetch orders this month
-  const { data: monthlyOrders } = await supabase
-    .from('orders')
-    .select('id, order_lines(line_total)')
-    .eq('brand_id', brandId)
-    .gte('order_date', startOfMonth.split('T')[0])
-    .lte('order_date', endOfMonth.split('T')[0]) as { data: Array<{ id: string; order_lines: Array<{ line_total: number }> }> | null }
+  if (brand.status === 'pending') {
+    redirect('/pending')
+  }
 
-  // Calculate monthly stats
-  const ordersThisMonth = monthlyOrders?.length ?? 0
-  const revenueThisMonth = monthlyOrders?.reduce((total, order) => {
-    return total + (order.order_lines?.reduce((sum, line) => sum + (line.line_total ?? 0), 0) ?? 0)
-  }, 0) ?? 0
+  // Get stats
+  const { count: productsCount } = await supabase
+    .from('brand_products')
+    .select('*', { count: 'exact', head: true })
+    .eq('brand_id', brand.id)
+    .eq('status', 'approved')
 
-  // Get outstanding invoices
-  const { data: outstandingInvoices } = await supabase
+  const { count: pendingProductsCount } = await supabase
+    .from('brand_products')
+    .select('*', { count: 'exact', head: true })
+    .eq('brand_id', brand.id)
+    .eq('status', 'pending')
+
+  const { count: posCount } = await supabase
+    .from('purchase_orders')
+    .select('*', { count: 'exact', head: true })
+    .eq('brand_id', brand.id)
+
+  const { count: pendingPosCount } = await supabase
+    .from('purchase_orders')
+    .select('*', { count: 'exact', head: true })
+    .eq('brand_id', brand.id)
+    .eq('status', 'pending')
+
+  const { count: invoicesCount } = await supabase
     .from('invoices')
-    .select('amount')
-    .eq('brand_id', brandId)
-    .in('status', ['pending', 'overdue']) as { data: Array<{ amount: number }> | null }
+    .select('*', { count: 'exact', head: true })
+    .eq('brand_id', brand.id)
 
-  const outstandingAmount = outstandingInvoices?.reduce((sum, inv) => sum + inv.amount, 0) ?? 0
-
-  // Get recent orders
-  const { data: recentOrders } = await supabase
-    .from('orders')
-    .select('id, po_number, order_date, status, order_lines(quantity_cases, line_total)')
-    .eq('brand_id', brandId)
+  // Get recent POs
+  const { data: recentPOs } = await supabase
+    .from('purchase_orders')
+    .select('id, po_number, status, total_amount, created_at')
+    .eq('brand_id', brand.id)
     .order('created_at', { ascending: false })
-    .limit(5) as { data: Array<{ id: string; po_number: string; order_date: string; status: string; order_lines: Array<{ quantity_cases: number; line_total: number }> }> | null }
+    .limit(5)
+
+  const stats = [
+    { label: 'Approved Products', value: productsCount || 0, icon: Package, href: '/products', color: 'bg-green-100 text-green-600' },
+    { label: 'Pending Products', value: pendingProductsCount || 0, icon: Clock, href: '/products', color: 'bg-yellow-100 text-yellow-600' },
+    { label: 'Purchase Orders', value: posCount || 0, icon: ShoppingCart, href: '/orders', color: 'bg-blue-100 text-blue-600' },
+    { label: 'Awaiting Response', value: pendingPosCount || 0, icon: Clock, href: '/orders', color: 'bg-orange-100 text-orange-600' },
+    { label: 'Invoices', value: invoicesCount || 0, icon: FileText, href: '/invoices', color: 'bg-purple-100 text-purple-600' },
+  ]
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-1">Welcome back, {userData.brands?.name}</p>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Welcome back, {brand.company_name || brand.name}
+        </h1>
+        <p className="text-gray-600 mt-1">Here's what's happening with your account</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <Package className="h-6 w-6 text-brand-accent" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Orders this month</p>
-                <p className="text-2xl font-bold text-gray-900">{ordersThisMonth}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <PoundSterling className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Revenue this month</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  £{revenueThisMonth.toLocaleString('en-GB', { minimumFractionDigits: 2 })}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <FileText className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Outstanding invoices</p>
-                <p className="text-2xl font-bold text-gray-900">
-                  £{outstandingAmount.toLocaleString('en-GB', { minimumFractionDigits: 2 })}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Orders */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Recent Orders</CardTitle>
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+        {stats.map((stat) => (
           <Link
-            href="/orders"
-            className="text-sm text-brand-accent hover:text-indigo-600 flex items-center"
+            key={stat.label}
+            href={stat.href}
+            className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
           >
-            View all
-            <ArrowRight className="h-4 w-4 ml-1" />
-          </Link>
-        </CardHeader>
-        <CardContent className="p-0">
-          {recentOrders && recentOrders.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>PO Number</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Cases</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentOrders.map((order) => {
-                  const totalCases = order.order_lines?.reduce((sum, line) => sum + line.quantity_cases, 0) ?? 0
-                  const totalValue = order.order_lines?.reduce((sum, line) => sum + (line.line_total ?? 0), 0) ?? 0
-                  return (
-                    <TableRow key={order.id}>
-                      <TableCell>
-                        <Link
-                          href={`/orders/${order.id}`}
-                          className="text-brand-accent hover:text-indigo-600 font-medium"
-                        >
-                          {order.po_number}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(order.order_date).toLocaleDateString('en-GB')}
-                      </TableCell>
-                      <TableCell>{totalCases}</TableCell>
-                      <TableCell>
-                        £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2 })}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getOrderStatusVariant(order.status)}>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              No orders yet
+            <div className={`p-2 rounded-lg w-fit ${stat.color}`}>
+              <stat.icon className="w-5 h-5" />
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <p className="text-2xl font-bold text-gray-900 mt-3">{stat.value}</p>
+            <p className="text-sm text-gray-500">{stat.label}</p>
+          </Link>
+        ))}
+      </div>
+
+      {/* Recent POs */}
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+          <h2 className="font-semibold text-gray-900">Recent Purchase Orders</h2>
+          <Link href="/orders" className="text-sm text-shelfdrop-blue hover:underline">
+            View all
+          </Link>
+        </div>
+
+        {recentPOs && recentPOs.length > 0 ? (
+          <div className="divide-y divide-gray-200">
+            {recentPOs.map((po) => (
+              <Link
+                key={po.id}
+                href={`/orders/${po.id}`}
+                className="p-4 flex items-center justify-between hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <ShoppingCart className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{po.po_number}</p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(po.created_at).toLocaleDateString('en-GB')}
+                    </p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    po.status === 'accepted'
+                      ? 'bg-green-100 text-green-700'
+                      : po.status === 'pending'
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : po.status === 'rejected'
+                      ? 'bg-red-100 text-red-700'
+                      : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {po.status}
+                  </span>
+                  <p className="text-sm font-medium text-gray-900 mt-1">
+                    £{po.total_amount?.toFixed(2) || '0.00'}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="p-8 text-center text-gray-500">
+            No purchase orders yet. Shelfdrop will send you orders when they're ready.
+          </div>
+        )}
+      </div>
+
+      {/* Quick Actions */}
+      <div className="grid md:grid-cols-2 gap-4">
+        <Link
+          href="/products"
+          className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow"
+        >
+          <Package className="w-8 h-8 text-shelfdrop-blue mb-3" />
+          <h3 className="font-semibold text-gray-900">Add Products</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Submit new products for Shelfdrop to sell on your behalf
+          </p>
+        </Link>
+
+        <Link
+          href="/invoices"
+          className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-md transition-shadow"
+        >
+          <FileText className="w-8 h-8 text-shelfdrop-blue mb-3" />
+          <h3 className="font-semibold text-gray-900">Create Invoice</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Generate invoices from accepted purchase orders
+          </p>
+        </Link>
+      </div>
     </div>
   )
 }

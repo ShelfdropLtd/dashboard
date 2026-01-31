@@ -38,7 +38,7 @@ export default function BrandFilter({ brands, selectedBrandId }: BrandFilterProp
         <select
           value={selectedBrandId || ''}
           onChange={(e) => handleChange(e.target.value)}
-          className="flex-1 max-w-xs px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+          className="flex-1 max-w-xs px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
         >
           <option value="">All Brands</option>
           {brands.map((brand) => (

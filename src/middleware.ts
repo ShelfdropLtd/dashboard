@@ -56,58 +56,19 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Protected routes - redirect to login if not authenticated
-  const protectedPaths = ['/dashboard', '/orders', '/invoices', '/admin']
-  const isProtectedPath = protectedPaths.some(path =>
-    request.nextUrl.pathname.startsWith(path)
-  )
+  // Public routes that don't require auth
+  const publicRoutes = ['/auth/login', '/auth/signup', '/auth/callback', '/auth/verify']
+  const isPublicRoute = publicRoutes.some(route => request.nextUrl.pathname.startsWith(route))
 
-  if (isProtectedPath && !user) {
+  // If no user and trying to access protected route, redirect to login
+  if (!user && !isPublicRoute && request.nextUrl.pathname !== '/') {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 
-  // Auth routes - redirect to dashboard if already authenticated
-  const authPaths = ['/auth/login', '/auth/signup', '/auth/forgot-password']
-  const isAuthPath = authPaths.some(path =>
-    request.nextUrl.pathname.startsWith(path)
-  )
-
-  if (isAuthPath && user) {
-    // Check user role to redirect appropriately
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    // If no user record exists, create one
-    if (!userData) {
-      await supabase.from('users').insert({
-        id: user.id,
-        email: user.email!,
-        role: 'brand',
-        brand_id: null,
-      })
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
-
-    if (userData.role === 'admin') {
-      return NextResponse.redirect(new URL('/admin', request.url))
-    }
-    return NextResponse.redirect(new URL('/dashboard', request.url))
-  }
-
-  // Admin routes - check if user is admin
-  if (request.nextUrl.pathname.startsWith('/admin') && user) {
-    const { data: userData } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
-
-    if (!userData || userData.role !== 'admin') {
-      return NextResponse.redirect(new URL('/dashboard', request.url))
-    }
+  // If user exists and trying to access auth pages, redirect appropriately
+  if (user && isPublicRoute) {
+    const isAdmin = user.email === 'george@shelfdrop.com'
+    return NextResponse.redirect(new URL(isAdmin ? '/admin' : '/dashboard', request.url))
   }
 
   return response

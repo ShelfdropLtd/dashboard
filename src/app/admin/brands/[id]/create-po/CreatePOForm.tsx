@@ -140,7 +140,7 @@ export default function CreatePOForm({ brandId, products }: CreatePOFormProps) {
                   value={item.productId}
                   onChange={(e) => updateItem(index, 'productId', e.target.value)}
                   required
-                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                  className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
                 >
                   <option value="">Select product...</option>
                   {products.map((product) => (
@@ -156,7 +156,7 @@ export default function CreatePOForm({ brandId, products }: CreatePOFormProps) {
                   value={item.quantity}
                   onChange={(e) => updateItem(index, 'quantity', parseInt(e.target.value) || 1)}
                   required
-                  className="w-24 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+                  className="w-24 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
                   placeholder="Qty"
                 />
 
@@ -179,7 +179,7 @@ export default function CreatePOForm({ brandId, products }: CreatePOFormProps) {
           <button
             type="button"
             onClick={addItem}
-            className="flex items-center gap-2 text-[#F15A2B] hover:text-[#D14A1F] text-sm font-medium"
+            className="flex items-center gap-2 text-shelfdrop-blue hover:text-[#D14A1F] text-sm font-medium"
           >
             <Plus className="w-4 h-4" />
             Add Another Item
@@ -203,7 +203,7 @@ export default function CreatePOForm({ brandId, products }: CreatePOFormProps) {
           onChange={(e) => setNotes(e.target.value)}
           rows={3}
           placeholder="Any special instructions or notes..."
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent"
         />
       </div>
 
@@ -218,7 +218,7 @@ export default function CreatePOForm({ brandId, products }: CreatePOFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="px-6 py-3 bg-[#F15A2B] text-white rounded-lg hover:bg-[#D14A1F] disabled:opacity-50 flex items-center gap-2"
+          className="px-6 py-3 bg-shelfdrop-green text-black rounded-lg hover:bg-green-400 disabled:opacity-50 flex items-center gap-2"
         >
           {loading ? (
             <Loader2 className="w-4 h-4 animate-spin" />

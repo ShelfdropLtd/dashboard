@@ -76,7 +76,7 @@ export default async function BrandInvoicesPage() {
           <p className="text-gray-500 mb-4">Create invoices from accepted purchase orders</p>
           <Link
             href="/orders"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-[#F15A2B] text-white rounded-lg hover:bg-[#D14A1F]"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-shelfdrop-green text-black rounded-lg hover:bg-green-400"
           >
             View Purchase Orders
           </Link>

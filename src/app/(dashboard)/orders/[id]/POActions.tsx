@@ -81,7 +81,7 @@ export default function POActions({ poId }: POActionsProps) {
           onChange={(e) => setRejectReason(e.target.value)}
           placeholder="Please explain why you're rejecting this PO..."
           rows={3}
-          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#F15A2B] focus:border-transparent mb-4"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-shelfdrop-green focus:border-transparent mb-4"
         />
         <div className="flex gap-3">
           <button

@@ -8,10 +8,16 @@ import {
   FileText,
   LogOut,
   Building2,
-  Users,
   ClipboardCheck,
   Database,
-  Truck
+  History,
+  Package,
+  CheckSquare,
+  Megaphone,
+  MessageSquare,
+  Truck,
+  BarChart3,
+  Receipt
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -19,16 +25,28 @@ import { useEffect, useState } from 'react'
 
 const brandNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/products', label: 'Products', icon: Package },
+  { href: '/orders', label: 'Purchase Orders', icon: ShoppingCart },
+  { href: '/shipments', label: 'Shipments', icon: Truck },
   { href: '/invoices', label: 'Invoices', icon: FileText },
+  { href: '/promotions', label: 'Promotions', icon: Megaphone },
+  { href: '/reports', label: 'Reports & P&L', icon: BarChart3 },
+  { href: '/expansion', label: 'Market Expansion', icon: Receipt },
+  { href: '/support', label: 'Support', icon: MessageSquare },
 ]
 
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/brands', label: 'Brands', icon: Building2 },
-  { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
-  { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/approvals', label: 'Brand Approvals', icon: ClipboardCheck },
+  { href: '/admin/product-approvals', label: 'Product Approvals', icon: CheckSquare },
+  { href: '/admin/products', label: 'All Products', icon: Package },
+  { href: '/admin/shipments', label: 'Shipments', icon: Truck },
+  { href: '/admin/duties', label: 'Duties & Bond', icon: Receipt },
   { href: '/admin/invoices', label: 'Invoices', icon: FileText },
+  { href: '/admin/promotions', label: 'Promotions', icon: Megaphone },
+  { href: '/admin/support', label: 'Support', icon: MessageSquare },
+  { href: '/admin/logs', label: 'Audit Logs', icon: History },
   { href: '/admin/data', label: 'Data Management', icon: Database },
 ]
 
@@ -43,7 +61,6 @@ export default function Sidebar() {
     async function checkRole() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        // Simple admin check by email
         setIsAdmin(user.email === 'george@shelfdrop.com')
       }
       setLoading(false)
@@ -96,7 +113,7 @@ export default function Sidebar() {
                   href={item.href}
                   className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-[#F15A2B] text-white'
+                      ? 'bg-shelfdrop-green text-black'
                       : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >

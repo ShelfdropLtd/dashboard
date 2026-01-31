@@ -109,7 +109,7 @@ export default function BrandApprovalList({ brands }: BrandApprovalListProps) {
                         href={brand.website}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-[#F15A2B] hover:underline"
+                        className="text-shelfdrop-blue hover:underline"
                       >
                         {brand.website}
                       </a>

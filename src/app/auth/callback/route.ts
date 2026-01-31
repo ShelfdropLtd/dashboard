@@ -2,35 +2,37 @@ import { createClient } from '@/lib/supabase/server'
 import { NextResponse } from 'next/server'
 
 export async function GET(request: Request) {
-  const requestUrl = new URL(request.url)
-  const code = requestUrl.searchParams.get('code')
-  const next = requestUrl.searchParams.get('next') ?? '/dashboard'
+  const { searchParams, origin } = new URL(request.url)
+  const code = searchParams.get('code')
+  const next = searchParams.get('next') ?? '/onboarding'
 
   if (code) {
     const supabase = await createClient()
-
     const { error } = await supabase.auth.exchangeCodeForSession(code)
 
     if (!error) {
-      // Get user role to redirect appropriately
+      // Check if user is admin
       const { data: { user } } = await supabase.auth.getUser()
 
-      if (user) {
-        const { data: userData } = await supabase
-          .from('users')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-
-        if (userData?.role === 'admin') {
-          return NextResponse.redirect(new URL('/admin', requestUrl.origin))
-        }
+      if (user?.email === 'george@shelfdrop.com') {
+        return NextResponse.redirect(`${origin}/admin`)
       }
 
-      return NextResponse.redirect(new URL(next, requestUrl.origin))
+      // Check if brand user has completed onboarding
+      const { data: brand } = await supabase
+        .from('brands')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single()
+
+      if (brand) {
+        return NextResponse.redirect(`${origin}/dashboard`)
+      }
+
+      return NextResponse.redirect(`${origin}/onboarding`)
     }
   }
 
-  // Return the user to an error page with some instructions
-  return NextResponse.redirect(new URL('/auth/login?error=Could not authenticate', requestUrl.origin))
+  // Return to login on error
+  return NextResponse.redirect(`${origin}/auth/login?error=auth_error`)
 }
