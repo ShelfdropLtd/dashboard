@@ -19,7 +19,7 @@ export default async function AdminLayout({
 
   // For now, allow access if email matches admin
   // This bypasses the profiles table check
-  const isAdmin = user.email === 'george@shelfdrop.co'
+  const isAdmin = user.email === 'george@shelfdrop.com'
 
   if (!isAdmin) {
     redirect('/dashboard')

@@ -44,7 +44,7 @@ export default function Sidebar() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
         // Simple admin check by email
-        setIsAdmin(user.email === 'george@shelfdrop.co')
+        setIsAdmin(user.email === 'george@shelfdrop.com')
       }
       setLoading(false)
     }

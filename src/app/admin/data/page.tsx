@@ -15,7 +15,7 @@ export default async function DataManagementPage() {
   }
 
   // Simple admin check by email
-  if (user.email !== 'george@shelfdrop.co') {
+  if (user.email !== 'george@shelfdrop.com') {
     redirect('/dashboard')
   }
 

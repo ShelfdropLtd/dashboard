@@ -30,7 +30,7 @@ export default function DeleteActions({
       switch (type) {
         case 'users':
           // Delete profiles (keeps auth.users but removes profile data)
-          await supabase.from('profiles').delete().neq('email', 'george@shelfdrop.co')
+          await supabase.from('profiles').delete().neq('email', 'george@shelfdrop.com')
           break
 
         case 'brands':
@@ -64,7 +64,7 @@ export default function DeleteActions({
           await supabase.from('order_items').delete().neq('id', '00000000-0000-0000-0000-000000000000')
           await supabase.from('orders').delete().neq('id', '00000000-0000-0000-0000-000000000000')
           await supabase.from('brands').delete().neq('id', '00000000-0000-0000-0000-000000000000')
-          await supabase.from('profiles').delete().neq('email', 'george@shelfdrop.co')
+          await supabase.from('profiles').delete().neq('email', 'george@shelfdrop.com')
           break
       }
 

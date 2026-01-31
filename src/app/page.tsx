@@ -13,7 +13,7 @@ export default async function HomePage() {
   }
 
   // Check if user is admin by email (simple check)
-  if (user.email === 'george@shelfdrop.co') {
+  if (user.email === 'george@shelfdrop.com') {
     redirect('/admin')
   }
 
