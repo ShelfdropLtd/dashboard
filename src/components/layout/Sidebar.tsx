@@ -10,7 +10,9 @@ import {
   Building2,
   ClipboardCheck,
   Database,
-  History
+  History,
+  Package,
+  CheckSquare
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -18,6 +20,7 @@ import { useEffect, useState } from 'react'
 
 const brandNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/products', label: 'Products', icon: Package },
   { href: '/orders', label: 'Purchase Orders', icon: ShoppingCart },
   { href: '/invoices', label: 'Invoices', icon: FileText },
 ]
@@ -25,7 +28,9 @@ const brandNavItems = [
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/brands', label: 'Brands', icon: Building2 },
-  { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
+  { href: '/admin/approvals', label: 'Brand Approvals', icon: ClipboardCheck },
+  { href: '/admin/product-approvals', label: 'Product Approvals', icon: CheckSquare },
+  { href: '/admin/products', label: 'All Products', icon: Package },
   { href: '/admin/logs', label: 'Audit Logs', icon: History },
   { href: '/admin/data', label: 'Data Management', icon: Database },
 ]
