@@ -2,9 +2,10 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Package } from 'lucide-react'
+import { Package, Plus } from 'lucide-react'
 import ProductsTable from './ProductsTable'
 import BrandFilter from './BrandFilter'
+import AdminAddProductForm from './AdminAddProductForm'
 
 export default async function AdminProductsPage({
   searchParams
@@ -19,10 +20,11 @@ export default async function AdminProductsPage({
     redirect('/auth/login')
   }
 
-  // Get all brands for filter
+  // Get all brands for filter and add product form
   const { data: brands } = await supabase
     .from('brands')
     .select('id, company_name, name')
+    .eq('status', 'approved')
     .order('company_name', { ascending: true })
 
   // Get products (filtered by brand if specified)
@@ -46,6 +48,15 @@ export default async function AdminProductsPage({
         </div>
       </div>
 
+      {/* Add Product Form */}
+      <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="flex items-center gap-2 mb-4">
+          <Plus className="w-5 h-5 text-[#F15A2B]" />
+          <h2 className="font-semibold text-gray-900">Add Product</h2>
+        </div>
+        <AdminAddProductForm brands={brands || []} />
+      </div>
+
       <BrandFilter
         brands={brands || []}
         selectedBrandId={searchParams.brand}
@@ -62,7 +73,7 @@ export default async function AdminProductsPage({
           </p>
         </div>
       ) : (
-        <ProductsTable products={products} />
+        <ProductsTable products={products} brands={brands || []} />
       )}
     </div>
   )
