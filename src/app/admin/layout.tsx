@@ -1,5 +1,7 @@
-import { redirect } from 'next/navigation'
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 
 export default async function AdminLayout({
@@ -15,25 +17,23 @@ export default async function AdminLayout({
     redirect('/auth/login')
   }
 
-  // Get user details
-  const { data: userData } = await supabase
-    .from('users')
+  // Check if user is admin
+  const { data: profile } = await supabase
+    .from('profiles')
     .select('role')
     .eq('id', user.id)
     .single()
 
-  if (!userData || userData.role !== 'admin') {
+  if (profile?.role !== 'admin') {
     redirect('/dashboard')
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar userRole="admin" />
-      <div className="lg:pl-64">
-        <main className="py-6 px-4 sm:px-6 lg:px-8 pt-20 lg:pt-6">
-          {children}
-        </main>
-      </div>
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
+      <main className="flex-1 p-8">
+        {children}
+      </main>
     </div>
   )
 }
