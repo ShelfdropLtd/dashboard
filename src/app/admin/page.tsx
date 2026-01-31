@@ -1,168 +1,178 @@
-import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
-import Badge, { getOrderStatusVariant } from '@/components/ui/Badge'
-import { Building2, Package, FileText, Users, ArrowRight } from 'lucide-react'
+export const dynamic = 'force-dynamic'
 
-export default async function AdminDashboardPage() {
+import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
+import { Building2, Package, ShoppingCart, FileText, Clock, CheckCircle } from 'lucide-react'
+import Link from 'next/link'
+
+export default async function AdminDashboard() {
   const supabase = await createClient()
 
-  // Get counts
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user || user.email !== 'george@shelfdrop.com') {
+    redirect('/auth/login')
+  }
+
+  // Get stats
   const { count: brandsCount } = await supabase
     .from('brands')
     .select('*', { count: 'exact', head: true })
+    .eq('status', 'approved')
 
-  const { count: ordersCount } = await supabase
-    .from('orders')
-    .select('*', { count: 'exact', head: true })
-
-  const { count: pendingOrdersCount } = await supabase
-    .from('orders')
+  const { count: pendingBrandsCount } = await supabase
+    .from('brands')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'pending')
 
-  const { count: usersCount } = await supabase
-    .from('users')
+  const { count: productsCount } = await supabase
+    .from('brand_products')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'approved')
+
+  const { count: pendingProductsCount } = await supabase
+    .from('brand_products')
+    .select('*', { count: 'exact', head: true })
+    .eq('status', 'pending')
+
+  const { count: posCount } = await supabase
+    .from('purchase_orders')
     .select('*', { count: 'exact', head: true })
 
-  // Get recent orders across all brands
-  const { data: recentOrders } = await supabase
-    .from('orders')
-    .select('id, po_number, order_date, status, brands(name), order_lines(quantity_cases, line_total)')
+  const { count: invoicesCount } = await supabase
+    .from('invoices')
+    .select('*', { count: 'exact', head: true })
+
+  // Get recent activity
+  const { data: recentBrands } = await supabase
+    .from('brands')
+    .select('id, company_name, name, status, created_at')
     .order('created_at', { ascending: false })
-    .limit(10)
+    .limit(5)
+
+  const { data: recentPOs } = await supabase
+    .from('purchase_orders')
+    .select('id, po_number, status, created_at, brands(company_name, name)')
+    .order('created_at', { ascending: false })
+    .limit(5)
+
+  const stats = [
+    { label: 'Active Brands', value: brandsCount || 0, icon: Building2, href: '/admin/brands', color: 'bg-blue-100 text-blue-600' },
+    { label: 'Pending Brands', value: pendingBrandsCount || 0, icon: Clock, href: '/admin/approvals', color: 'bg-yellow-100 text-yellow-600' },
+    { label: 'Approved Products', value: productsCount || 0, icon: Package, href: '/admin/products', color: 'bg-green-100 text-green-600' },
+    { label: 'Pending Products', value: pendingProductsCount || 0, icon: Clock, href: '/admin/product-approvals', color: 'bg-orange-100 text-orange-600' },
+    { label: 'Purchase Orders', value: posCount || 0, icon: ShoppingCart, href: '/admin/brands', color: 'bg-purple-100 text-purple-600' },
+    { label: 'Invoices', value: invoicesCount || 0, icon: FileText, href: '/admin/brands', color: 'bg-pink-100 text-pink-600' },
+  ]
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-        <p className="text-gray-600 mt-1">Overview of all brands and orders</p>
+        <p className="text-gray-600 mt-1">Welcome back, George</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-indigo-100 rounded-lg">
-                <Building2 className="h-6 w-6 text-brand-accent" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Brands</p>
-                <p className="text-2xl font-bold text-gray-900">{brandsCount ?? 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <Package className="h-6 w-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{ordersCount ?? 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <Package className="h-6 w-6 text-yellow-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Pending Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{pendingOrdersCount ?? 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center">
-              <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="h-6 w-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Users</p>
-                <p className="text-2xl font-bold text-gray-900">{usersCount ?? 0}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Recent Orders */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Recent Orders (All Brands)</CardTitle>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {stats.map((stat) => (
           <Link
-            href="/admin/orders"
-            className="text-sm text-brand-accent hover:text-indigo-600 flex items-center"
+            key={stat.label}
+            href={stat.href}
+            className="bg-white rounded-xl border border-gray-200 p-4 hover:shadow-md transition-shadow"
           >
-            View all
-            <ArrowRight className="h-4 w-4 ml-1" />
-          </Link>
-        </CardHeader>
-        <CardContent className="p-0">
-          {recentOrders && recentOrders.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>PO Number</TableHead>
-                  <TableHead>Brand</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Cases</TableHead>
-                  <TableHead>Total</TableHead>
-                  <TableHead>Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {recentOrders.map((order: any) => {
-                  const totalCases = order.order_lines?.reduce((sum: number, line: any) => sum + line.quantity_cases, 0) ?? 0
-                  const totalValue = order.order_lines?.reduce((sum: number, line: any) => sum + (line.line_total ?? 0), 0) ?? 0
-                  return (
-                    <TableRow key={order.id}>
-                      <TableCell>
-                        <Link
-                          href={`/admin/orders/${order.id}`}
-                          className="text-brand-accent hover:text-indigo-600 font-medium"
-                        >
-                          {order.po_number}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{order.brands?.name || '-'}</TableCell>
-                      <TableCell>
-                        {new Date(order.order_date).toLocaleDateString('en-GB')}
-                      </TableCell>
-                      <TableCell>{totalCases}</TableCell>
-                      <TableCell>
-                        £{totalValue.toLocaleString('en-GB', { minimumFractionDigits: 2 })}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={getOrderStatusVariant(order.status)}>
-                          {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              No orders yet
+            <div className={`p-2 rounded-lg w-fit ${stat.color}`}>
+              <stat.icon className="w-5 h-5" />
             </div>
-          )}
-        </CardContent>
-      </Card>
+            <p className="text-2xl font-bold text-gray-900 mt-3">{stat.value}</p>
+            <p className="text-sm text-gray-500">{stat.label}</p>
+          </Link>
+        ))}
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Recent Brands */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200 flex items-center justify-between">
+            <h2 className="font-semibold text-gray-900">Recent Brands</h2>
+            <Link href="/admin/brands" className="text-sm text-[#F15A2B] hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="divide-y divide-gray-200">
+            {recentBrands?.map((brand) => (
+              <Link
+                key={brand.id}
+                href={`/admin/brands/${brand.id}`}
+                className="p-4 flex items-center justify-between hover:bg-gray-50"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <Building2 className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">
+                      {brand.company_name || brand.name || 'Unnamed'}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {new Date(brand.created_at).toLocaleDateString('en-GB')}
+                    </p>
+                  </div>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  brand.status === 'approved'
+                    ? 'bg-green-100 text-green-700'
+                    : brand.status === 'pending'
+                    ? 'bg-yellow-100 text-yellow-700'
+                    : 'bg-gray-100 text-gray-700'
+                }`}>
+                  {brand.status}
+                </span>
+              </Link>
+            ))}
+            {(!recentBrands || recentBrands.length === 0) && (
+              <div className="p-8 text-center text-gray-500">No brands yet</div>
+            )}
+          </div>
+        </div>
+
+        {/* Recent POs */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="p-4 border-b border-gray-200">
+            <h2 className="font-semibold text-gray-900">Recent Purchase Orders</h2>
+          </div>
+          <div className="divide-y divide-gray-200">
+            {recentPOs?.map((po: any) => (
+              <div key={po.id} className="p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
+                    <ShoppingCart className="w-5 h-5 text-gray-400" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900">{po.po_number}</p>
+                    <p className="text-sm text-gray-500">
+                      {po.brands?.company_name || po.brands?.name || 'Unknown'}
+                    </p>
+                  </div>
+                </div>
+                <span className={`px-2 py-1 rounded-full text-xs ${
+                  po.status === 'accepted'
+                    ? 'bg-green-100 text-green-700'
+                    : po.status === 'pending'
+                    ? 'bg-yellow-100 text-yellow-700'
+                    : po.status === 'rejected'
+                    ? 'bg-red-100 text-red-700'
+                    : 'bg-gray-100 text-gray-700'
+                }`}>
+                  {po.status}
+                </span>
+              </div>
+            ))}
+            {(!recentPOs || recentPOs.length === 0) && (
+              <div className="p-8 text-center text-gray-500">No purchase orders yet</div>
+            )}
+          </div>
+        </div>
+      </div>
     </div>
   )
 }
