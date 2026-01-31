@@ -25,7 +25,7 @@ interface InboundShipment {
   id: string
   reference_number: string
   brand_id: string
-  brands: { company_name: string }
+  brands: { company_name: string } | { company_name: string }[] | null
 }
 
 interface Props {
