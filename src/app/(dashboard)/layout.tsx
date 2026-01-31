@@ -1,5 +1,7 @@
-import { redirect } from 'next/navigation'
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
+import { redirect } from 'next/navigation'
 import Sidebar from '@/components/layout/Sidebar'
 
 export default async function DashboardLayout({
@@ -15,32 +17,66 @@ export default async function DashboardLayout({
     redirect('/auth/login')
   }
 
-  // Get user details
-  const { data: userData } = await supabase
-    .from('users')
-    .select('role, brand_id, brands(name)')
+  // Check user role
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
     .eq('id', user.id)
-    .single() as { data: { role: string; brand_id: string | null; brands: { name: string } | null } | null }
+    .single()
 
-  if (!userData) {
-    redirect('/auth/login')
-  }
-
-  // Redirect admins to admin dashboard
-  if (userData.role === 'admin') {
-    redirect('/admin')
-  }
-
-  const brandName = userData.brands?.name ?? null
-
-  return (
-    <div className="min-h-screen bg-gray-50">
-      <Sidebar userRole="brand" brandName={brandName} />
-      <div className="lg:pl-64">
-        <main className="py-6 px-4 sm:px-6 lg:px-8 pt-20 lg:pt-6">
+  // If admin, let them through to dashboard
+  if (profile?.role === 'admin') {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar />
+        <main className="flex-1 p-8">
           {children}
         </main>
       </div>
+    )
+  }
+
+  // For brand users, check if they have a brand and onboarding status
+  const { data: brand } = await supabase
+    .from('brands')
+    .select('id, onboarding_status')
+    .eq('user_id', user.id)
+    .single()
+
+  // If no brand, redirect to onboarding
+  if (!brand) {
+    redirect('/onboarding')
+  }
+
+  // Route based on onboarding status
+  switch (brand.onboarding_status) {
+    case 'pending':
+      redirect('/onboarding/pending')
+    case 'approved':
+    case 'pricing_review':
+      redirect('/onboarding/pricing')
+    case 'pricing_accepted':
+    case 'contract_pending':
+      redirect('/onboarding/contracts')
+    case 'contract_signed':
+    case 'shipping_setup':
+      redirect('/onboarding/shipping')
+    case 'rejected':
+      redirect('/onboarding/pending')
+    case 'active':
+      // Stay on dashboard - onboarding complete
+      break
+    default:
+      // If status is null/undefined/draft, go to onboarding
+      redirect('/onboarding')
+  }
+
+  return (
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
+      <main className="flex-1 p-8">
+        {children}
+      </main>
     </div>
   )
 }
