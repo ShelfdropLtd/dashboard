@@ -48,18 +48,6 @@ export default function SignupPage() {
       }
 
       if (data.user) {
-        // Create user record in users table
-        const { error: insertError } = await supabase.from('users').insert({
-          id: data.user.id,
-          email: data.user.email!,
-          role: 'brand',
-          brand_id: null, // Admin will assign brand later
-        })
-
-        if (insertError) {
-          console.error('Error creating user record:', insertError)
-        }
-
         setSuccess(true)
       }
     } catch (err) {
@@ -80,7 +68,7 @@ export default function SignupPage() {
           We've sent you a confirmation link. Please check your email to verify your account.
         </p>
         <p className="mt-4 text-sm text-gray-500">
-          Once verified, a Shelfdrop admin will assign you to your brand.
+          Once verified, you'll complete your company details and our team will review your application.
         </p>
         <Link
           href="/auth/login"

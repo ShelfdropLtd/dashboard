@@ -13,6 +13,9 @@ import {
   Settings,
   Menu,
   X,
+  TrendingUp,
+  BarChart3,
+  ClipboardCheck,
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -41,6 +44,7 @@ export default function Sidebar({ userRole, brandName }: SidebarProps) {
 
   const adminLinks = [
     { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+    { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
     { href: '/admin/brands', label: 'Brands', icon: Building2 },
     { href: '/admin/orders', label: 'Orders', icon: Package },
     { href: '/admin/invoices', label: 'Invoices', icon: FileText },
