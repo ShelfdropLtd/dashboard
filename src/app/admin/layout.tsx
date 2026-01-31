@@ -17,14 +17,11 @@ export default async function AdminLayout({
     redirect('/auth/login')
   }
 
-  // Check if user is admin
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
+  // For now, allow access if email matches admin
+  // This bypasses the profiles table check
+  const isAdmin = user.email === 'george@shelfdrop.co'
 
-  if (profile?.role !== 'admin') {
+  if (!isAdmin) {
     redirect('/dashboard')
   }
 

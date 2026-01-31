@@ -10,7 +10,8 @@ import {
   Building2,
   Users,
   ClipboardCheck,
-  Database
+  Database,
+  Truck
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -25,10 +26,9 @@ const brandNavItems = [
 const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/admin/brands', label: 'Brands', icon: Building2 },
+  { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
   { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { href: '/admin/invoices', label: 'Invoices', icon: FileText },
-  { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
-  { href: '/admin/users', label: 'Users', icon: Users },
   { href: '/admin/data', label: 'Data Management', icon: Database },
 ]
 
@@ -43,13 +43,8 @@ export default function Sidebar() {
     async function checkRole() {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        const { data: profile } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single()
-
-        setIsAdmin(profile?.role === 'admin')
+        // Simple admin check by email
+        setIsAdmin(user.email === 'george@shelfdrop.co')
       }
       setLoading(false)
     }

@@ -12,14 +12,8 @@ export default async function HomePage() {
     redirect('/auth/login')
   }
 
-  // Check if user is admin
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single()
-
-  if (profile?.role === 'admin') {
+  // Check if user is admin by email (simple check)
+  if (user.email === 'george@shelfdrop.co') {
     redirect('/admin')
   }
 
