@@ -1,70 +1,42 @@
+export const dynamic = 'force-dynamic'
+
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
-import { Card, CardContent } from '@/components/ui/Card'
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from '@/components/ui/Table'
-import Badge from '@/components/ui/Badge'
+import { redirect } from 'next/navigation'
+import { Users as UsersIcon } from 'lucide-react'
+import UsersTable from './UsersTable'
 
 export default async function AdminUsersPage() {
   const supabase = await createClient()
 
-  // Fetch all users with their brand info
-  const { data: users } = await supabase
-    .from('users')
-    .select('*, brands(name)')
+  const { data: { user } } = await supabase.auth.getUser()
+
+  if (!user || user.email !== 'george@shelfdrop.com') {
+    redirect('/auth/login')
+  }
+
+  // Get all profiles with their brand associations
+  const { data: profiles } = await supabase
+    .from('profiles')
+    .select('*, brands(id, company_name, name)')
     .order('created_at', { ascending: false })
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900">Users</h1>
-        <p className="text-gray-600 mt-1">Manage user accounts and permissions</p>
+    <div className="p-8">
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-shelfdrop-blue">Users</h1>
+          <p className="text-gray-600">Manage all registered users</p>
+        </div>
       </div>
 
-      <Card>
-        <CardContent className="p-0">
-          {users && users.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Role</TableHead>
-                  <TableHead>Brand</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {users.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-medium">{user.email}</TableCell>
-                    <TableCell>
-                      <Badge variant={user.role === 'admin' ? 'info' : 'default'}>
-                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{user.brands?.name || '-'}</TableCell>
-                    <TableCell>
-                      {new Date(user.created_at).toLocaleDateString('en-GB')}
-                    </TableCell>
-                    <TableCell>
-                      <Link
-                        href={`/admin/users/${user.id}`}
-                        className="text-brand-accent hover:text-indigo-600 text-sm font-medium"
-                      >
-                        Edit
-                      </Link>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-12 text-gray-500">
-              No users yet
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {!profiles || profiles.length === 0 ? (
+        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+          <UsersIcon className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+          <p className="text-gray-500">No users found</p>
+        </div>
+      ) : (
+        <UsersTable users={profiles} />
+      )}
     </div>
   )
 }
