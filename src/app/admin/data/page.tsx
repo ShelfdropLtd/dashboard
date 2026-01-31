@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Trash2, Users, Building2, FileText, Truck, AlertTriangle } from 'lucide-react'
+import { AlertTriangle } from 'lucide-react'
 import DeleteActions from './DeleteActions'
 
 export default async function DataManagementPage() {
@@ -19,7 +19,7 @@ export default async function DataManagementPage() {
     redirect('/dashboard')
   }
 
-  // Get counts
+  // Get counts - handle tables that might not exist
   const { count: usersCount } = await supabase
     .from('profiles')
     .select('*', { count: 'exact', head: true })
@@ -28,15 +28,23 @@ export default async function DataManagementPage() {
     .from('brands')
     .select('*', { count: 'exact', head: true })
 
-  const { count: invoicesCount } = await supabase
+  // These might not exist yet
+  let invoicesCount = 0
+  let shipmentsCount = 0
+
+  const invoicesResult = await supabase
     .from('invoices')
     .select('*', { count: 'exact', head: true })
-    .catch(() => ({ count: 0 }))
+  if (!invoicesResult.error) {
+    invoicesCount = invoicesResult.count || 0
+  }
 
-  const { count: shipmentsCount } = await supabase
+  const shipmentsResult = await supabase
     .from('shipping_plans')
     .select('*', { count: 'exact', head: true })
-    .catch(() => ({ count: 0 }))
+  if (!shipmentsResult.error) {
+    shipmentsCount = shipmentsResult.count || 0
+  }
 
   return (
     <div className="space-y-8">
@@ -58,8 +66,8 @@ export default async function DataManagementPage() {
       <DeleteActions
         usersCount={usersCount || 0}
         brandsCount={brandsCount || 0}
-        invoicesCount={invoicesCount || 0}
-        shipmentsCount={shipmentsCount || 0}
+        invoicesCount={invoicesCount}
+        shipmentsCount={shipmentsCount}
       />
     </div>
   )
