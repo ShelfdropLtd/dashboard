@@ -143,22 +143,22 @@ export default function UsersTable({ users }: Props) {
                   })}
                 </td>
                 <td className="px-6 py-4 text-right">
-                  {profile.email === 'george@shelfdrop.com' ? (
-                    <span className="text-xs text-gray-400">Admin</span>
-                  ) : (
-                    <button
-                      onClick={() => handleDelete(profile.id, profile.email)}
-                      disabled={deleting === profile.id}
-                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      title="Delete user"
-                    >
-                      {deleting === profile.id ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
-                    </button>
-                  )}
+                  <div className="flex items-center justify-end gap-2">
+                    {profile.email !== 'george@shelfdrop.com' && (
+                      <button
+                        onClick={() => handleDelete(profile.id, profile.email)}
+                        disabled={deleting === profile.id}
+                        className="px-3 py-1 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
+                        title="Delete user"
+                      >
+                        {deleting === profile.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          'Delete'
+                        )}
+                      </button>
+                    )}
+                  </div>
                 </td>
               </tr>
             ))}
