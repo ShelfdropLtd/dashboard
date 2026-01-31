@@ -3,139 +3,94 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
-import { Check, X, Loader2, ArrowRight } from 'lucide-react'
+import { Loader2, Check, X } from 'lucide-react'
 
 interface PricingActionsProps {
   brandId: string
-  offerId?: string
-  offerPrice?: number | null
-  productName?: string
-  canProceed?: boolean
-  acceptedCount?: number
+  offerIds: string[]
 }
 
-export default function PricingActions({
-  brandId,
-  offerId,
-  offerPrice,
-  productName,
-  canProceed,
-  acceptedCount
-}: PricingActionsProps) {
+export default function PricingActions({ brandId, offerIds }: PricingActionsProps) {
   const [loading, setLoading] = useState(false)
+  const [action, setAction] = useState<'accept' | 'reject' | null>(null)
   const router = useRouter()
   const supabase = createClient()
 
   const handleAccept = async () => {
-    if (!offerId) return
     setLoading(true)
+    setAction('accept')
 
     try {
-      const { error } = await supabase
+      // Update all offers to accepted
+      await supabase
         .from('sku_offers')
-        .update({
-          status: 'accepted',
-          responded_at: new Date().toISOString(),
-        })
-        .eq('id', offerId)
+        .update({ status: 'accepted', responded_at: new Date().toISOString() })
+        .in('id', offerIds)
 
-      if (error) throw error
-      router.refresh()
-    } catch (err) {
-      console.error('Error accepting offer:', err)
-      alert('Failed to accept offer')
-    } finally {
+      // Update brand status
+      await supabase
+        .from('brands')
+        .update({ onboarding_status: 'pricing_accepted' })
+        .eq('id', brandId)
+
+      router.push('/onboarding/contracts')
+    } catch (error) {
+      console.error('Error accepting pricing:', error)
       setLoading(false)
+      setAction(null)
     }
   }
 
   const handleReject = async () => {
-    if (!offerId) return
-
-    const reason = prompt(`Why are you rejecting the offer for ${productName}? (optional)`)
     setLoading(true)
+    setAction('reject')
 
     try {
-      const { error } = await supabase
+      // Update all offers to rejected
+      await supabase
         .from('sku_offers')
-        .update({
-          status: 'rejected',
-          brand_notes: reason || null,
-          responded_at: new Date().toISOString(),
-        })
-        .eq('id', offerId)
+        .update({ status: 'rejected', responded_at: new Date().toISOString() })
+        .in('id', offerIds)
 
-      if (error) throw error
-      router.refresh()
-    } catch (err) {
-      console.error('Error rejecting offer:', err)
-      alert('Failed to reject offer')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleProceed = async () => {
-    if (!confirm(`Proceed to contracts with ${acceptedCount} accepted SKU(s)?`)) return
-    setLoading(true)
-
-    try {
-      const { error } = await supabase
+      // Update brand status back to pricing_review for re-negotiation
+      await supabase
         .from('brands')
-        .update({
-          onboarding_stage: 'contract_signing',
-          pricing_accepted_at: new Date().toISOString(),
-        })
+        .update({ onboarding_status: 'pricing_review' })
         .eq('id', brandId)
 
-      if (error) throw error
-      router.push('/onboarding/contracts')
-    } catch (err) {
-      console.error('Error proceeding:', err)
-      alert('Failed to proceed')
-    } finally {
+      router.refresh()
+    } catch (error) {
+      console.error('Error rejecting pricing:', error)
       setLoading(false)
+      setAction(null)
     }
   }
 
-  // Proceed button
-  if (canProceed) {
-    return (
-      <button
-        onClick={handleProceed}
-        disabled={loading}
-        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 transition-colors"
-      >
-        {loading ? (
-          <Loader2 className="h-4 w-4 animate-spin" />
-        ) : (
-          <>
-            Proceed to Contracts
-            <ArrowRight className="h-4 w-4" />
-          </>
-        )}
-      </button>
-    )
-  }
-
-  // Accept/Reject buttons for individual offers
   return (
-    <div className="flex items-center gap-2">
-      <button
-        onClick={handleAccept}
-        disabled={loading}
-        className="p-1.5 bg-green-100 text-green-600 rounded hover:bg-green-200 disabled:opacity-50 transition-colors"
-        title="Accept"
-      >
-        {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-      </button>
+    <div className="flex gap-3">
       <button
         onClick={handleReject}
         disabled={loading}
-        className="p-1.5 bg-red-100 text-red-600 rounded hover:bg-red-200 disabled:opacity-50 transition-colors"
-        title="Reject"
+        className="px-6 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
       >
-        <X className="h-4 w-4" />
+        {loading && action === 'reject' ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <X className="w-4 h-4" />
+        )}
+        Request Changes
+      </button>
+      <button
+        onClick={handleAccept}
+        disabled={loading}
+        className="px-6 py-3 bg-[#F15A2B] text-white rounded-xl hover:bg-[#D14A1F] transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+      >
+        {loading && action === 'accept' ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <Check className="w-4 h-4" />
+        )}
+        Accept Pricing
       </button>
     </div>
   )

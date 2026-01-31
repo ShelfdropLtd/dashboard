@@ -1,162 +1,128 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard,
-  Package,
+  ShoppingCart,
   FileText,
   LogOut,
   Building2,
   Users,
-  Settings,
-  Menu,
-  X,
-  TrendingUp,
-  BarChart3,
   ClipboardCheck,
+  Database
 } from 'lucide-react'
-import { useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
-interface SidebarProps {
-  userRole: 'brand' | 'admin'
-  brandName?: string | null
-}
+const brandNavItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/invoices', label: 'Invoices', icon: FileText },
+]
 
-export default function Sidebar({ userRole, brandName }: SidebarProps) {
+const adminNavItems = [
+  { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/admin/brands', label: 'Brands', icon: Building2 },
+  { href: '/admin/orders', label: 'Orders', icon: ShoppingCart },
+  { href: '/admin/invoices', label: 'Invoices', icon: FileText },
+  { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
+  { href: '/admin/users', label: 'Users', icon: Users },
+  { href: '/admin/data', label: 'Data Management', icon: Database },
+]
+
+export default function Sidebar() {
   const pathname = usePathname()
   const router = useRouter()
   const supabase = createClient()
-  const [mobileOpen, setMobileOpen] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  const handleLogout = async () => {
+  useEffect(() => {
+    async function checkRole() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role')
+          .eq('id', user.id)
+          .single()
+
+        setIsAdmin(profile?.role === 'admin')
+      }
+      setLoading(false)
+    }
+    checkRole()
+  }, [supabase])
+
+  const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/auth/login')
-    router.refresh()
   }
 
-  const brandLinks = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/orders', label: 'Orders', icon: Package },
-    { href: '/invoices', label: 'Invoices', icon: FileText },
-  ]
+  const navItems = isAdmin ? adminNavItems : brandNavItems
 
-  const adminLinks = [
-    { href: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '/admin/approvals', label: 'Approvals', icon: ClipboardCheck },
-    { href: '/admin/brands', label: 'Brands', icon: Building2 },
-    { href: '/admin/orders', label: 'Orders', icon: Package },
-    { href: '/admin/invoices', label: 'Invoices', icon: FileText },
-    { href: '/admin/users', label: 'Users', icon: Users },
-  ]
-
-  const links = userRole === 'admin' ? adminLinks : brandLinks
-
-  const isActive = (href: string) => {
-    if (href === '/dashboard' || href === '/admin') {
-      return pathname === href
-    }
-    return pathname.startsWith(href)
+  if (loading) {
+    return (
+      <aside className="w-64 bg-white border-r border-gray-200 min-h-screen p-4">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded mb-8"></div>
+          <div className="space-y-2">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-10 bg-gray-100 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </aside>
+    )
   }
-
-  const NavContent = () => (
-    <>
-      {/* Logo */}
-      <div className="flex items-center h-16 px-4 border-b border-gray-200">
-        <div className="h-8 w-8 bg-brand-dark rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">S</span>
-        </div>
-        <span className="ml-3 font-semibold text-gray-900">Shelfdrop</span>
-      </div>
-
-      {/* Brand name for brand users */}
-      {userRole === 'brand' && brandName && (
-        <div className="px-4 py-3 border-b border-gray-200">
-          <p className="text-xs text-gray-500 uppercase tracking-wider">Brand</p>
-          <p className="text-sm font-medium text-gray-900 truncate">{brandName}</p>
-        </div>
-      )}
-
-      {/* Navigation */}
-      <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
-        {links.map((link) => {
-          const Icon = link.icon
-          const active = isActive(link.href)
-          return (
-            <Link
-              key={link.href}
-              href={link.href}
-              onClick={() => setMobileOpen(false)}
-              className={`
-                flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors
-                ${active
-                  ? 'bg-brand-accent text-white'
-                  : 'text-gray-700 hover:bg-gray-100'
-                }
-              `}
-            >
-              <Icon className="h-5 w-5 mr-3" />
-              {link.label}
-            </Link>
-          )
-        })}
-      </nav>
-
-      {/* Logout */}
-      <div className="p-4 border-t border-gray-200">
-        <button
-          onClick={handleLogout}
-          className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-        >
-          <LogOut className="h-5 w-5 mr-3" />
-          Sign out
-        </button>
-      </div>
-    </>
-  )
 
   return (
-    <>
-      {/* Mobile menu button */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-gray-200 px-4 h-16 flex items-center">
-        <button
-          onClick={() => setMobileOpen(true)}
-          className="p-2 rounded-lg hover:bg-gray-100"
-        >
-          <Menu className="h-6 w-6" />
-        </button>
-        <div className="ml-3 flex items-center">
-          <div className="h-8 w-8 bg-brand-dark rounded-lg flex items-center justify-center">
+    <aside className="w-64 bg-white border-r border-gray-200 min-h-screen flex flex-col">
+      <div className="p-4">
+        <Link href={isAdmin ? '/admin' : '/dashboard'} className="flex items-center gap-2">
+          <div className="w-8 h-8 bg-gray-900 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-sm">S</span>
           </div>
-          <span className="ml-2 font-semibold text-gray-900">Shelfdrop</span>
-        </div>
+          <span className="font-semibold text-gray-900">Shelfdrop</span>
+        </Link>
       </div>
 
-      {/* Mobile sidebar */}
-      {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50">
-          <div
-            className="absolute inset-0 bg-black/50"
-            onClick={() => setMobileOpen(false)}
-          />
-          <div className="absolute left-0 top-0 bottom-0 w-64 bg-white flex flex-col">
-            <button
-              onClick={() => setMobileOpen(false)}
-              className="absolute top-4 right-4 p-2 rounded-lg hover:bg-gray-100"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            <NavContent />
-          </div>
-        </div>
-      )}
+      <nav className="flex-1 p-4">
+        <ul className="space-y-1">
+          {navItems.map((item) => {
+            const isActive = pathname === item.href ||
+              (item.href !== '/admin' && item.href !== '/dashboard' && pathname.startsWith(item.href))
 
-      {/* Desktop sidebar */}
-      <div className="hidden lg:flex lg:flex-col lg:w-64 lg:fixed lg:inset-y-0 bg-white border-r border-gray-200">
-        <NavContent />
+            return (
+              <li key={item.href}>
+                <Link
+                  href={item.href}
+                  className={`flex items-center gap-3 px-3 py-2 rounded-lg transition-colors ${
+                    isActive
+                      ? 'bg-[#F15A2B] text-white'
+                      : 'text-gray-600 hover:bg-gray-100'
+                  }`}
+                >
+                  <item.icon className="w-5 h-5" />
+                  <span>{item.label}</span>
+                </Link>
+              </li>
+            )
+          })}
+        </ul>
+      </nav>
+
+      <div className="p-4 border-t border-gray-200">
+        <button
+          onClick={handleSignOut}
+          className="flex items-center gap-3 px-3 py-2 w-full text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <LogOut className="w-5 h-5" />
+          <span>Sign out</span>
+        </button>
       </div>
-    </>
+    </aside>
   )
 }
